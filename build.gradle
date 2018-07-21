@@ -1,0 +1,168 @@
+version = "1.0"
+ext {
+	unicornVersion = "2.6.1"
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	jcenter()
+	maven {
+		url "https://oss.sonatype.org/content/repositories/snapshots/"
+	}
+	maven {
+		url "https://oss.sonatype.org/content/repositories/releases/"
+	}
+	maven {
+		url "https://jitpack.io"
+	}
+	google()
+}
+
+buildscript {
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+		maven {
+			url "https://oss.sonatype.org/content/repositories/snapshots/"
+		}
+		maven {
+			url "https://oss.sonatype.org/content/repositories/releases/"
+		}
+		maven {
+			url "https://jitpack.io"
+		}
+		google()
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+	}
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "java"
+
+dependencies {
+	compile "com.google.code.findbugs:jsr305:3.0.2"
+	compile "org.projectlombok:lombok:1.16.20"
+	compile "com.github.Shockah.Unicorn:func:2.6.2"
+	compile "org.kohsuke:github-api:1.93"
+	compile "com.squareup.okhttp3:okhttp:3.11.0"
+}
+
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
+sourceSets.main {
+	java.srcDirs = ["src"]
+	resources.srcDirs = ["assets"]
+}
+
+project.ext.mainClassName = "pl.shockah.tmlinstaller.TModLoaderInstaller"
+project.ext.assetsDir = new File("assets")
+
+jar {
+	manifest {
+		attributes 'Main-Class': 'pl.shockah.tmlinstaller.TModLoaderInstaller'
+	}
+}
+
+task run(dependsOn: project.tasks.classes, type: JavaExec) {
+	main = project.mainClassName
+	classpath = sourceSets.main.runtimeClasspath
+	standardInput = System.in
+	workingDir = project.assetsDir
+	ignoreExitValue = true
+
+	if (System.getProperty('DEBUG', 'false') == 'true') {
+		jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+		debug true
+	}
+	if (System.getProperty('PROFILE', 'false') == 'true') {
+		def properties = new Properties()
+		properties.load(project.rootProject.file("local.properties").newDataInputStream())
+		jvmArgs properties.getProperty("profiler-arg")
+	}
+}
+
+task dist(type: Jar) {
+	archiveName = "Mallard.jar"
+	from files(sourceSets.main.output.classesDirs)
+	from files(sourceSets.main.output.resourcesDir)
+	from {configurations.compile.collect {zipTree(it)}}
+	from files(project.assetsDir)
+ 
+	manifest {
+		attributes 'Main-Class': project.mainClassName
+	}
+}
+
+void distStandalone(String platform) {
+	def outputPath = new File(new File(dist.archivePath.parent, platform), appName)
+	if (platform == "mac")
+		outputPath = new File(outputPath.parentFile, "${outputPath.name}.app")
+	if (outputPath.exists())
+		outputPath.deleteDir()
+
+	def java = new File(System.properties.'java.home')
+	while (true) {
+		if (java.name.contains("jdk"))
+			break
+		java = java.parentFile
+		if (java == null)
+			throw new IllegalArgumentException("Cannot find JDK")
+	}
+
+	exec {
+		executable "java"
+		args("-jar", "$projectDir/tools/packr.jar")
+		args("--platform", platform)
+		args("--executable", "Mallard")
+		args("--classpath", dist.archivePath.absolutePath)
+		args("--removelibs", dist.archivePath.absolutePath)
+		args("--jdk", java)
+		args("--mainclass", mainClassName)
+		args("--minimizejre", "soft")
+		args("--output", outputPath)
+
+		if (platform == "mac") {
+			args("--bundle", "pl.shockah.mallard")
+			args("--icon", "$projectDir/mac-icon.icns")
+			args("--vmargs", "XstartOnFirstThread")
+		}
+	}
+}
+
+task distStandaloneWindows {
+	dependsOn dist
+	doLast {
+		distStandalone("windows64")
+	}
+}
+
+task distStandaloneMac {
+	dependsOn dist
+	doLast {
+		distStandalone("mac")
+	}
+}
+
+task distMac {
+	dependsOn dist
+
+	doLast {
+		exec {
+			executable "$projectDir/tools/jar2app/jar2app.py"
+			args dist.archivePath.absolutePath
+			args new File(dist.archivePath.parent, "${dist.archivePath.name.split("\\.").dropRight(1).join(".")}.app")
+			args("-b", "pl.shockah.mallard")
+			args("-n", "pl.shockah.mallard")
+			args("-d", "Mallard")
+			args("-i", "$projectDir/mac-icon.icns")
+			args("-j", "-XstartOnFirstThread")
+		}
+	}
+}
+
+dist.dependsOn project.tasks.classes
