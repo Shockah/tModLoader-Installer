@@ -107,6 +107,13 @@ public class AppController extends Controller {
 			File file = new File(pathTextField.getText());
 			if (!file.exists())
 				file = null;
+
+			if (file != null) {
+				File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(file);
+				if (!gameFile.exists())
+					file = null;
+			}
+
 			return file;
 		}, pathTextField.textProperty());
 	}

@@ -46,9 +46,8 @@ public class TModLoaderInstaller extends Application {
 			synchronized (githubLock) {
 				try {
 					if (github == null) {
-						Logger.getLogger(GitHub.class.getName()).setLevel(Level.ALL);
-						github = GitHub.connectUsingOAuth("2552e547ba340cf508935b056685a824d0c86d56");
-						//github = GitHub.connectAnonymously();
+						//github = GitHub.connectUsingOAuth("2552e547ba340cf508935b056685a824d0c86d56");
+						github = GitHub.connectAnonymously();
 					}
 					success.onSuccess(github);
 				} catch (IOException e) {
