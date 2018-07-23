@@ -87,7 +87,7 @@ task run(dependsOn: project.tasks.classes, type: JavaExec) {
 }
 
 task dist(type: Jar) {
-	archiveName = "Mallard.jar"
+	archiveName = "tModLoader Installer.jar"
 	from files(sourceSets.main.output.classesDirs)
 	from files(sourceSets.main.output.resourcesDir)
 	from {configurations.compile.collect {zipTree(it)}}
@@ -98,8 +98,8 @@ task dist(type: Jar) {
 	}
 }
 
-void distStandalone(String platform) {
-	def outputPath = new File(new File(dist.archivePath.parent, platform), appName)
+void distPackr(String platform) {
+	def outputPath = new File(new File(dist.archivePath.parent, platform), "tModLoader Installer")
 	if (platform == "mac")
 		outputPath = new File(outputPath.parentFile, "${outputPath.name}.app")
 	if (outputPath.exists())
@@ -118,50 +118,33 @@ void distStandalone(String platform) {
 		executable "java"
 		args("-jar", "$projectDir/tools/packr.jar")
 		args("--platform", platform)
-		args("--executable", "Mallard")
+		args("--executable", "tModLoader Installer")
 		args("--classpath", dist.archivePath.absolutePath)
 		args("--removelibs", dist.archivePath.absolutePath)
 		args("--jdk", java)
 		args("--mainclass", mainClassName)
-		args("--minimizejre", "soft")
+		args("--minimizejre", "tools/minimize.json")
 		args("--output", outputPath)
 
 		if (platform == "mac") {
-			args("--bundle", "pl.shockah.mallard")
+			args("--bundle", "pl.shockah.tmlinstaller")
 			args("--icon", "$projectDir/mac-icon.icns")
-			args("--vmargs", "XstartOnFirstThread")
+			//args("--vmargs", "XstartOnFirstThread")
 		}
 	}
 }
 
-task distStandaloneWindows {
+task distWindows {
 	dependsOn dist
 	doLast {
-		distStandalone("windows64")
-	}
-}
-
-task distStandaloneMac {
-	dependsOn dist
-	doLast {
-		distStandalone("mac")
+		distPackr("windows64")
 	}
 }
 
 task distMac {
 	dependsOn dist
-
 	doLast {
-		exec {
-			executable "$projectDir/tools/jar2app/jar2app.py"
-			args dist.archivePath.absolutePath
-			args new File(dist.archivePath.parent, "${dist.archivePath.name.split("\\.").dropRight(1).join(".")}.app")
-			args("-b", "pl.shockah.mallard")
-			args("-n", "pl.shockah.mallard")
-			args("-d", "Mallard")
-			args("-i", "$projectDir/mac-icon.icns")
-			args("-j", "-XstartOnFirstThread")
-		}
+		distPackr("mac")
 	}
 }
 

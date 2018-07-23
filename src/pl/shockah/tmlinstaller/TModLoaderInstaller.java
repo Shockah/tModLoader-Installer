@@ -113,6 +113,7 @@ public class TModLoaderInstaller extends Application {
 
 		primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
 		primaryStage.setTitle("tModLoader Installer");
+		primaryStage.setResizable(false);
 		primaryStage.setScene(new Scene(Layouts.app.load().getView()));
 		primaryStage.show();
 	}
