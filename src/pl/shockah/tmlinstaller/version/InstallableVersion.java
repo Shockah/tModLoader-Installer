@@ -10,7 +10,7 @@ public interface InstallableVersion {
 	@Nonnull
 	String getName();
 
-	void retrieveAndInstall(@Nonnull File terrariaFolder, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure);
+	void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure);
 
 	boolean shouldBackup();
 

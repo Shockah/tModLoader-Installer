@@ -7,6 +7,7 @@ import java.nio.file.StandardCopyOption;
 
 import javax.annotation.Nonnull;
 
+import pl.shockah.tmlinstaller.TModLoaderInstaller;
 import pl.shockah.unicorn.func.Action0;
 
 public class BackupVersion implements InstallableVersion {
@@ -24,8 +25,8 @@ public class BackupVersion implements InstallableVersion {
 	}
 
 	@Override
-	public void retrieveAndInstall(@Nonnull File terrariaFolder, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
-		File gameFile = new File(terrariaFolder, "Terraria.exe");
+	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
+		File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
 
 		try {
 			progress.onProgress(0f);

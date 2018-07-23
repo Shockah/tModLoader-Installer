@@ -3,15 +3,23 @@ package pl.shockah.tmlinstaller;
 import org.kohsuke.github.GitHub;
 
 import java.io.IOException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import okhttp3.Dispatcher;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+import pl.shockah.tmlinstaller.os.MacOS;
 import pl.shockah.tmlinstaller.os.OS;
 import pl.shockah.tmlinstaller.os.WindowsOS;
 import pl.shockah.unicorn.func.Action0;
@@ -39,8 +47,8 @@ public class TModLoaderInstaller extends Application {
 				try {
 					if (github == null) {
 						Logger.getLogger(GitHub.class.getName()).setLevel(Level.ALL);
-						//github = GitHub.connectUsingOAuth("xxx");
-						github = GitHub.connectAnonymously();
+						github = GitHub.connectUsingOAuth("2552e547ba340cf508935b056685a824d0c86d56");
+						//github = GitHub.connectAnonymously();
 					}
 					success.onSuccess(github);
 				} catch (IOException e) {
@@ -57,11 +65,40 @@ public class TModLoaderInstaller extends Application {
 	public static OS getOS() {
 		synchronized (osLock) {
 			if (os == null) {
-				// TODO: detect OS
-				os = new WindowsOS();
+				String osProperty = System.getProperty("os.name");
+
+				// TODO: Linux support
+				if (osProperty.toLowerCase().contains("mac") && osProperty.toLowerCase().contains("os"))
+					os = new MacOS();
+				else
+					os = new WindowsOS();
 			}
 			return os;
 		}
+	}
+
+	@Nonnull
+	public static OkHttpClient getNewClient() {
+		return getNewClient(null);
+	}
+
+	@Nonnull
+	public static OkHttpClient getNewClient(@Nullable OkHttpProgressListener progressListener) {
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 1, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+		executor.allowCoreThreadTimeOut(true);
+
+		OkHttpClient.Builder builder = new OkHttpClient.Builder()
+				.dispatcher(new Dispatcher(executor));
+
+		if (progressListener != null)
+			builder = builder.addNetworkInterceptor(chain -> {
+				Response originalResponse = chain.proceed(chain.request());
+				return originalResponse.newBuilder()
+						.body(new OkHttpProgressResponseBody(originalResponse.body(), progressListener))
+						.build();
+			});
+
+		return builder.build();
 	}
 
 	@Override

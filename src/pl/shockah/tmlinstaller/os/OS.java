@@ -27,6 +27,19 @@ public abstract class OS {
 	public abstract File browseForTerrariaInstallPath(@Nonnull Window window);
 
 	@Nonnull
+	public abstract File getTerrariaFilesPathRelativeToBasePath(@Nonnull File basePath);
+
+	@Nonnull
+	public File getTerrariaExePathRelativeToBasePath(@Nonnull File basePath) {
+		return new File(getTerrariaFilesPathRelativeToBasePath(basePath), "Terraria.exe");
+	}
+
+	@Nonnull
+	public File getTerrariaExeBackupPathRelativeToBasePath(@Nonnull File basePath) {
+		return new File(getTerrariaFilesPathRelativeToBasePath(basePath), "Terraria.bak.exe");
+	}
+
+	@Nonnull
 	protected List<File> getAllSteamLibraries(@Nonnull File baseSteamAppsPath) {
 		List<File> result = new ArrayList<>();
 		result.add(baseSteamAppsPath);

@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -18,6 +22,7 @@ import javax.annotation.Nullable;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -44,7 +49,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 	}
 
 	@Override
-	public void retrieveAndInstall(@Nonnull File terrariaFolder, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
+	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
 		progress.onProgress(0f);
 
 		try {
@@ -54,23 +59,13 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 				return;
 			}
 
-			Request request = new Request.Builder()
+			TModLoaderInstaller.getNewClient((bytesRead, contentLength, done) -> {
+				if (!done)
+					progress.onProgress(0.5f * bytesRead / contentLength);
+			}).newCall(new Request.Builder()
 					.url(asset.getBrowserDownloadUrl())
-					.build();
-
-			OkHttpClient client = new OkHttpClient.Builder()
-					.addNetworkInterceptor(chain -> {
-						Response originalResponse = chain.proceed(chain.request());
-						return originalResponse.newBuilder()
-								.body(new OkHttpProgressResponseBody(originalResponse.body(), (bytesRead, contentLength, done) -> {
-									if (!done)
-										progress.onProgress(0.5f * bytesRead / contentLength);
-								}))
-								.build();
-					})
-					.build();
-
-			client.newCall(request).enqueue(new Callback() {
+					.build()
+			).enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
 					failure.call();
@@ -96,7 +91,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 						while ((entry = zip.getNextEntry()) != null) {
 							byte[] entryBytes = new byte[(int)entry.getSize()];
 							data.readFully(entryBytes);
-							File newFile = new File(terrariaFolder, entry.getName());
+							File newFile = new File(TModLoaderInstaller.getOS().getTerrariaFilesPathRelativeToBasePath(basePath), entry.getName());
 							newFile.getParentFile().mkdirs();
 							Files.write(newFile.toPath(), entryBytes);
 							currentContentSize += entryBytes.length;

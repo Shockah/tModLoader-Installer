@@ -38,7 +38,16 @@ public class WindowsOS extends OS {
 		chooser.setTitle("Choose Terraria.exe");
 		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Terraria.exe", "Terraria.exe"));
 		chooser.setSelectedExtensionFilter(chooser.getExtensionFilters().get(0));
-		return chooser.showOpenDialog(window);
+		File result = chooser.showOpenDialog(window);
+		if (result != null)
+			result = result.getParentFile();
+		return result;
+	}
+
+	@Nonnull
+	@Override
+	public File getTerrariaFilesPathRelativeToBasePath(@Nonnull File basePath) {
+		return basePath;
 	}
 
 	@Nullable

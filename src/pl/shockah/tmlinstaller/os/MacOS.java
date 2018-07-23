@@ -5,6 +5,7 @@ import java.io.File;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class MacOS extends OS {
@@ -17,12 +18,22 @@ public class MacOS extends OS {
 	@Nullable
 	@Override
 	public File getTerrariaInstallPath() {
-		return new File("~/Library/Application Support/Steam/steamapps/common/Terraria");
+		return new File(System.getProperty("user.home"), "Library/Application Support/Steam/steamapps/common/Terraria/Terraria.app");
 	}
 
 	@Nullable
 	@Override
 	public File browseForTerrariaInstallPath(@Nonnull Window window) {
-		return null;
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Choose Terraria.app");
+		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Terraria.app", "Terraria.app"));
+		chooser.setSelectedExtensionFilter(chooser.getExtensionFilters().get(0));
+		return chooser.showOpenDialog(window);
+	}
+
+	@Nonnull
+	@Override
+	public File getTerrariaFilesPathRelativeToBasePath(@Nonnull File basePath) {
+		return new File(basePath, "Contents/MacOS");
 	}
 }

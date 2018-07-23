@@ -151,10 +151,6 @@ public class AppController extends Controller {
 				return true;
 			return false;
 		}, versionComboBox.getSelectionModel().selectedItemProperty(), terrariaPath));
-
-		progressBar.progressProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println(newValue);
-		});
 	}
 
 	@Override
@@ -209,17 +205,16 @@ public class AppController extends Controller {
 		File file = TModLoaderInstaller.getOS().browseForTerrariaInstallPath(getView().getScene().getWindow());
 		if (file == null || !file.exists())
 			return;
-
-		File folder = file.getParentFile();
-		pathTextField.setText(folder.getAbsolutePath());
+		pathTextField.setText(file.getAbsolutePath());
 	}
 
 	@FXML
 	private void onInstallAction(ActionEvent event) {
 		installing.set(true);
-		File folder = new File(pathTextField.getText());
-		File gameFile = new File(folder, "Terraria.exe");
-		File backupFile = new File(folder, "Terraria.bak.exe");
+
+		File basePath = new File(pathTextField.getText());
+		File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
+		File backupFile = TModLoaderInstaller.getOS().getTerrariaExeBackupPathRelativeToBasePath(basePath);
 
 		try {
 			InstallableVersion version = versionComboBox.getSelectionModel().getSelectedItem();
@@ -227,7 +222,7 @@ public class AppController extends Controller {
 			if (version.shouldBackup() && gameFile.exists() && !backupFile.exists())
 				Files.copy(gameFile.toPath(), backupFile.toPath());
 
-			version.retrieveAndInstall(folder, f -> {
+			version.retrieveAndInstall(basePath, f -> {
 				progressBar.setProgress(f);
 			}, () -> Platform.runLater(() -> {
 				Alert alert = new Alert(Alert.AlertType.INFORMATION);
