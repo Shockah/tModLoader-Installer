@@ -17,6 +17,9 @@ public abstract class OS {
 	@Nonnull
 	private static final Pattern libraryFolderPattern = Pattern.compile("\\s*\"\\d+\"\\s+\"(.*)\"\\s*");
 
+	public void initialize() {
+	}
+
 	@Nonnull
 	public abstract String getGithubAssetString();
 

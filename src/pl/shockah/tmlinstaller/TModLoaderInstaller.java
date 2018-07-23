@@ -100,8 +100,14 @@ public class TModLoaderInstaller extends Application {
 		return builder.build();
 	}
 
+	public static void main(String[] args) {
+		launch(args);
+	}
+
 	@Override
 	public void start(Stage primaryStage) {
+		getOS().initialize();
+
 		primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
 		primaryStage.setTitle("tModLoader Installer");
 		primaryStage.setScene(new Scene(Layouts.app.load().getView()));
