@@ -30,6 +30,7 @@ import pl.shockah.tmlinstaller.OkHttpProgressResponseBody;
 import pl.shockah.tmlinstaller.TModLoaderInstaller;
 import pl.shockah.tmlinstaller.os.OS;
 import pl.shockah.unicorn.func.Action0;
+import pl.shockah.unicorn.func.Action1;
 
 public class GHReleaseInstallableVersion implements InstallableVersion {
 	@Nonnull
@@ -49,13 +50,14 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 	}
 
 	@Override
-	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
+	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action1<Throwable> failure) {
 		progress.onProgress(0f);
 
 		try {
 			GHAsset asset = getOSSpecificAsset(release);
 			if (asset == null) {
-				failure.call();
+				// TODO: handle potential old releases (Windows-only)
+				failure.call(null);
 				return;
 			}
 
@@ -68,7 +70,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 			).enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
-					failure.call();
+					failure.call(e);
 				}
 
 				@Override
@@ -103,7 +105,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 				}
 			});
 		} catch (IOException e) {
-			failure.call();
+			failure.call(e);
 		}
 	}
 

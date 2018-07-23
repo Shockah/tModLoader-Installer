@@ -87,7 +87,10 @@ public class TModLoaderInstaller extends Application {
 		executor.allowCoreThreadTimeOut(true);
 
 		OkHttpClient.Builder builder = new OkHttpClient.Builder()
-				.dispatcher(new Dispatcher(executor));
+				.dispatcher(new Dispatcher(executor))
+				.connectTimeout(5, TimeUnit.SECONDS)
+				.readTimeout(5, TimeUnit.SECONDS)
+				.writeTimeout(5, TimeUnit.SECONDS);
 
 		if (progressListener != null)
 			builder = builder.addNetworkInterceptor(chain -> {

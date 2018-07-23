@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import pl.shockah.tmlinstaller.TModLoaderInstaller;
 import pl.shockah.unicorn.func.Action0;
+import pl.shockah.unicorn.func.Action1;
 
 public class BackupVersion implements InstallableVersion {
 	@Nonnull
@@ -25,7 +26,7 @@ public class BackupVersion implements InstallableVersion {
 	}
 
 	@Override
-	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action0 failure) {
+	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action1<Throwable> failure) {
 		File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
 
 		try {
@@ -35,7 +36,7 @@ public class BackupVersion implements InstallableVersion {
 			success.call();
 		} catch (IOException e) {
 			e.printStackTrace();
-			failure.call();
+			failure.call(e);
 		}
 	}
 

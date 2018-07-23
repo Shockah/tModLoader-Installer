@@ -219,32 +219,57 @@ public class AppController extends Controller {
 	private void onInstallAction(ActionEvent event) {
 		installing.set(true);
 
-		File basePath = new File(pathTextField.getText());
-		File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
-		File backupFile = TModLoaderInstaller.getOS().getTerrariaExeBackupPathRelativeToBasePath(basePath);
+		Thread thread = new Thread(() -> {
+			File basePath = new File(pathTextField.getText());
+			File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
+			File backupFile = TModLoaderInstaller.getOS().getTerrariaExeBackupPathRelativeToBasePath(basePath);
 
-		try {
-			InstallableVersion version = versionComboBox.getSelectionModel().getSelectedItem();
-			progressBar.setProgress(0f);
-			if (version.shouldBackup() && gameFile.exists() && !backupFile.exists())
-				Files.copy(gameFile.toPath(), backupFile.toPath());
+			try {
+				InstallableVersion version = versionComboBox.getSelectionModel().getSelectedItem();
+				progressBar.setProgress(0f);
+				if (version.shouldBackup() && gameFile.exists() && !backupFile.exists())
+					Files.copy(gameFile.toPath(), backupFile.toPath());
 
-			version.retrieveAndInstall(basePath, f -> {
-				progressBar.setProgress(f);
-			}, () -> Platform.runLater(() -> {
-				Alert alert = new Alert(Alert.AlertType.INFORMATION);
-				alert.setTitle("Success");
-				alert.setHeaderText(null);
-				alert.setContentText(String.format("Successfully installed %s.", version.getName()));
-				alert.show();
+				version.retrieveAndInstall(basePath, f -> {
+					progressBar.setProgress(f);
+				}, () -> Platform.runLater(() -> {
+					Alert alert = new Alert(Alert.AlertType.INFORMATION);
+					alert.setTitle("Success");
+					alert.setHeaderText(null);
+					alert.setContentText(String.format("Successfully installed %s.", version.getName()));
+					alert.show();
+
+					installing.set(false);
+				}), throwable -> {
+					if (throwable != null)
+						showThrowableError(throwable);
+
+					installing.set(false);
+				});
+			} catch (IOException e) {
+				e.printStackTrace();
+				showThrowableError(e);
 
 				installing.set(false);
-			}), () -> {
-				installing.set(false);
-			});
-		} catch (IOException e) {
-			e.printStackTrace();
-			installing.set(false);
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	private void showThrowableError(@Nonnull Throwable throwable) {
+		if (Platform.isFxApplicationThread()) {
+			showThrowableErrorNow(throwable);
+		} else {
+			Platform.runLater(() -> showThrowableErrorNow(throwable));
 		}
+	}
+
+	private void showThrowableErrorNow(@Nonnull Throwable throwable) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.setTitle("Error");
+		alert.setHeaderText(null);
+		alert.setContentText(String.format("There was an error while installing:\n%s", throwable.getMessage()));
+		alert.show();
 	}
 }
