@@ -2,6 +2,8 @@ package pl.shockah.tmlinstaller.os;
 
 import java.io.File;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,6 +12,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class WindowsOS extends OS {
+	@Nonnull
+	private static final Pattern regQueryPattern = Pattern.compile("\\s+.+?\\s+.+?\\s+(.*)$");
+
 	@Nonnull
 	@Override
 	public String getGithubAssetString() {
@@ -58,9 +63,9 @@ public class WindowsOS extends OS {
 			String output = scanner.hasNext() ? scanner.next() : "";
 
 			for (String line : output.split("\\r?\\n")) {
-				if (!line.matches("^\\s+.*$"))
-					continue;
-				return line.split("\\s+")[3];
+				Matcher matcher = regQueryPattern.matcher(line);
+				if (matcher.find())
+					return matcher.group(1);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
