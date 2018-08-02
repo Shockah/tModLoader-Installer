@@ -4,9 +4,14 @@ import javax.annotation.Nonnull;
 
 import lombok.experimental.UtilityClass;
 import pl.shockah.tmlinstaller.controller.AppController;
+import pl.shockah.unicorn.javafx.Layout;
+import pl.shockah.unicorn.javafx.LayoutManager;
 
 @UtilityClass
 public final class Layouts {
 	@Nonnull
-	public static final Layout<AppController> app = new Layout<>("app");
+	private static final LayoutManager manager = new LayoutManager.Classpath("layouts/%s.fxml");
+
+	@Nonnull
+	public static final Layout<AppController> app = manager.getLayout("app");
 }

@@ -33,11 +33,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-import pl.shockah.tmlinstaller.Controller;
 import pl.shockah.tmlinstaller.TModLoaderInstaller;
 import pl.shockah.tmlinstaller.version.BackupVersion;
 import pl.shockah.tmlinstaller.version.GHReleaseInstallableVersion;
 import pl.shockah.tmlinstaller.version.InstallableVersion;
+import pl.shockah.unicorn.javafx.Controller;
 
 public class AppController extends Controller {
 	@FXML
@@ -209,7 +209,7 @@ public class AppController extends Controller {
 
 	@FXML
 	private void onBrowseAction(ActionEvent event) {
-		File file = TModLoaderInstaller.getOS().browseForTerrariaInstallPath(getView().getScene().getWindow());
+		File file = TModLoaderInstaller.getOS().browseForTerrariaInstallPath(getRoot().getScene().getWindow());
 		if (file == null || !file.exists())
 			return;
 		pathTextField.setText(file.getAbsolutePath());

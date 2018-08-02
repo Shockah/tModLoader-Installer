@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -114,7 +112,7 @@ public class TModLoaderInstaller extends Application {
 		primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
 		primaryStage.setTitle("tModLoader Installer");
 		primaryStage.setResizable(false);
-		primaryStage.setScene(new Scene(Layouts.app.load().getView()));
+		primaryStage.setScene(new Scene(Layouts.app.load().getRoot()));
 		primaryStage.show();
 	}
 

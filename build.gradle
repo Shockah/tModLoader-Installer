@@ -1,6 +1,6 @@
 version = "1.0"
 ext {
-	unicornVersion = "2.6.1"
+	unicornVersion = "2.9.1"
 }
 
 repositories {
@@ -46,7 +46,8 @@ apply plugin: "java"
 dependencies {
 	compile "com.google.code.findbugs:jsr305:3.0.2"
 	compile "org.projectlombok:lombok:1.16.20"
-	compile "com.github.Shockah.Unicorn:func:2.6.2"
+	compile "com.github.Shockah.Unicorn:func:$unicornVersion"
+	compile "com.github.Shockah.Unicorn:javafx:$unicornVersion"
 	compile "org.kohsuke:github-api:1.93"
 	compile "com.squareup.okhttp3:okhttp:3.11.0"
 }
