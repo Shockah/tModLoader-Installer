@@ -10,10 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -22,11 +18,8 @@ import javax.annotation.Nullable;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Dispatcher;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import pl.shockah.tmlinstaller.OkHttpProgressResponseBody;
 import pl.shockah.tmlinstaller.TModLoaderInstaller;
 import pl.shockah.tmlinstaller.os.OS;
 import pl.shockah.unicorn.func.Action0;
@@ -56,8 +49,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 		try {
 			GHAsset asset = getOSSpecificAsset(release);
 			if (asset == null) {
-				// TODO: handle potential old releases (Windows-only)
-				failure.call(null);
+				failure.call(new IOException("No downloadable asset file found for this release."));
 				return;
 			}
 
@@ -93,7 +85,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 						while ((entry = zip.getNextEntry()) != null) {
 							byte[] entryBytes = new byte[(int)entry.getSize()];
 							data.readFully(entryBytes);
-							File newFile = new File(TModLoaderInstaller.getOS().getTerrariaFilesPathRelativeToBasePath(basePath), entry.getName());
+							File newFile = new File(TModLoaderInstaller.os.get().getTerrariaFilesPathRelativeToBasePath(basePath), entry.getName());
 							newFile.getParentFile().mkdirs();
 							Files.write(newFile.toPath(), entryBytes);
 							currentContentSize += entryBytes.length;
@@ -111,8 +103,7 @@ public class GHReleaseInstallableVersion implements InstallableVersion {
 
 	@Nullable
 	private GHAsset getOSSpecificAsset(@Nonnull GHRelease release) throws IOException {
-		// TODO: detect OS
-		return getOSSpecificAsset(release, TModLoaderInstaller.getOS());
+		return getOSSpecificAsset(release, TModLoaderInstaller.os.get());
 	}
 
 	@Nullable

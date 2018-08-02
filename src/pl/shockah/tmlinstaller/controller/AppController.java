@@ -109,7 +109,7 @@ public class AppController extends Controller {
 				file = null;
 
 			if (file != null) {
-				File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(file);
+				File gameFile = TModLoaderInstaller.os.get().getTerrariaExePathRelativeToBasePath(file);
 				if (!gameFile.exists())
 					file = null;
 			}
@@ -137,7 +137,7 @@ public class AppController extends Controller {
 		});
 		versionComboBox.setButtonCell(versionComboBox.getCellFactory().call(null));
 
-		File terrariaPath = TModLoaderInstaller.getOS().getTerrariaInstallPath();
+		File terrariaPath = TModLoaderInstaller.os.get().getTerrariaInstallPath();
 		if (terrariaPath != null && terrariaPath.exists())
 			pathTextField.setText(terrariaPath.getAbsolutePath());
 	}
@@ -209,7 +209,7 @@ public class AppController extends Controller {
 
 	@FXML
 	private void onBrowseAction(ActionEvent event) {
-		File file = TModLoaderInstaller.getOS().browseForTerrariaInstallPath(getRoot().getScene().getWindow());
+		File file = TModLoaderInstaller.os.get().browseForTerrariaInstallPath(getRoot().getScene().getWindow());
 		if (file == null || !file.exists())
 			return;
 		pathTextField.setText(file.getAbsolutePath());
@@ -221,8 +221,8 @@ public class AppController extends Controller {
 
 		Thread thread = new Thread(() -> {
 			File basePath = new File(pathTextField.getText());
-			File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
-			File backupFile = TModLoaderInstaller.getOS().getTerrariaExeBackupPathRelativeToBasePath(basePath);
+			File gameFile = TModLoaderInstaller.os.get().getTerrariaExePathRelativeToBasePath(basePath);
+			File backupFile = TModLoaderInstaller.os.get().getTerrariaExeBackupPathRelativeToBasePath(basePath);
 
 			try {
 				InstallableVersion version = versionComboBox.getSelectionModel().getSelectedItem();

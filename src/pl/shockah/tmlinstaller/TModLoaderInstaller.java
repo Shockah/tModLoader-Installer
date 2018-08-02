@@ -21,12 +21,19 @@ import pl.shockah.tmlinstaller.os.MacOS;
 import pl.shockah.tmlinstaller.os.OS;
 import pl.shockah.tmlinstaller.os.WindowsOS;
 import pl.shockah.unicorn.func.Action0;
+import pl.shockah.unicorn.func.Lazy;
 
 public class TModLoaderInstaller extends Application {
-	private static OS os;
-
 	@Nonnull
-	private static final Object osLock = new Object();
+	public static final Lazy<OS> os = new Lazy<>(() -> {
+		String osProperty = System.getProperty("os.name");
+
+		// TODO: Linux support
+		if (osProperty.toLowerCase().contains("mac") && osProperty.toLowerCase().contains("os"))
+			return new MacOS();
+		else
+			return new WindowsOS();
+	});
 
 	private static GitHub github;
 
@@ -56,22 +63,6 @@ public class TModLoaderInstaller extends Application {
 		});
 		thread.setDaemon(true);
 		thread.start();
-	}
-
-	@Nonnull
-	public static OS getOS() {
-		synchronized (osLock) {
-			if (os == null) {
-				String osProperty = System.getProperty("os.name");
-
-				// TODO: Linux support
-				if (osProperty.toLowerCase().contains("mac") && osProperty.toLowerCase().contains("os"))
-					os = new MacOS();
-				else
-					os = new WindowsOS();
-			}
-			return os;
-		}
 	}
 
 	@Nonnull
@@ -107,7 +98,7 @@ public class TModLoaderInstaller extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		getOS().initialize();
+		os.get().initialize();
 
 		primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
 		primaryStage.setTitle("tModLoader Installer");

@@ -27,7 +27,7 @@ public class BackupVersion implements InstallableVersion {
 
 	@Override
 	public void retrieveAndInstall(@Nonnull File basePath, @Nonnull RetrieveProgressCallback progress, @Nonnull Action0 success, @Nonnull Action1<Throwable> failure) {
-		File gameFile = TModLoaderInstaller.getOS().getTerrariaExePathRelativeToBasePath(basePath);
+		File gameFile = TModLoaderInstaller.os.get().getTerrariaExePathRelativeToBasePath(basePath);
 
 		try {
 			progress.onProgress(0f);
